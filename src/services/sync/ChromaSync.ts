@@ -758,6 +758,37 @@ export class ChromaSync {
   }
 
   /**
+   * Sync stored observations to Chroma by their raw database format
+   * Used by external tools (like MemoryBench) for on-demand embedding
+   */
+  async syncStoredObservations(observations: StoredObservation[]): Promise<number> {
+    if (observations.length === 0) {
+      return 0;
+    }
+
+    await this.ensureConnection();
+
+    const allDocs: ChromaDocument[] = [];
+    for (const obs of observations) {
+      allDocs.push(...this.formatObservationDocs(obs));
+    }
+
+    // Sync in batches
+    let synced = 0;
+    for (let i = 0; i < allDocs.length; i += this.BATCH_SIZE) {
+      const batch = allDocs.slice(i, i + this.BATCH_SIZE);
+      await this.addDocuments(batch);
+      synced += batch.length;
+    }
+
+    logger.info('CHROMA_SYNC', `Synced ${observations.length} observations (${synced} documents)`, {
+      project: this.project
+    });
+
+    return observations.length;
+  }
+
+  /**
    * Query Chroma collection for semantic search
    * Used by SearchManager for vector-based search
    */

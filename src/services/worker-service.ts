@@ -255,6 +255,7 @@ import { ViewerRoutes } from './worker/http/routes/ViewerRoutes.js';
 import { SessionRoutes } from './worker/http/routes/SessionRoutes.js';
 import { DataRoutes } from './worker/http/routes/DataRoutes.js';
 import { SearchRoutes } from './worker/http/routes/SearchRoutes.js';
+import { SyncRoutes } from './worker/http/routes/SyncRoutes.js';
 import { SettingsRoutes } from './worker/http/routes/SettingsRoutes.js';
 
 export class WorkerService {
@@ -686,6 +687,14 @@ export class WorkerService {
       this.searchRoutes = new SearchRoutes(searchManager);
       this.searchRoutes.setupRoutes(this.app); // Setup search routes now that SearchManager is ready
       logger.info('WORKER', 'SearchManager initialized and search routes registered');
+
+      // Setup sync routes for on-demand embedding (used by MemoryBench)
+      const syncRoutes = new SyncRoutes(
+        this.dbManager.getSessionStore(),
+        this.dbManager.getChromaSync()
+      );
+      syncRoutes.setupRoutes(this.app);
+      logger.info('WORKER', 'SyncRoutes registered for on-demand embedding');
 
       // Connect to MCP server with timeout guard
       const mcpServerPath = path.join(__dirname, 'mcp-server.cjs');

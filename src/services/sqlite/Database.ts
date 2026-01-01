@@ -5,6 +5,7 @@ import { logger } from '../../utils/logger.js';
 // SQLite configuration constants
 const SQLITE_MMAP_SIZE_BYTES = 256 * 1024 * 1024; // 256MB
 const SQLITE_CACHE_SIZE_PAGES = 10_000;
+const SQLITE_BUSY_TIMEOUT_MS = 30_000; // 30 seconds - wait for locks instead of failing
 
 export interface Migration {
   version: number;
@@ -58,6 +59,7 @@ export class DatabaseManager {
     this.db.run('PRAGMA temp_store = memory');
     this.db.run(`PRAGMA mmap_size = ${SQLITE_MMAP_SIZE_BYTES}`);
     this.db.run(`PRAGMA cache_size = ${SQLITE_CACHE_SIZE_PAGES}`);
+    this.db.run(`PRAGMA busy_timeout = ${SQLITE_BUSY_TIMEOUT_MS}`); // Wait for locks instead of failing
 
     // Initialize schema_versions table
     this.initializeSchemaVersions();
