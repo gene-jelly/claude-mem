@@ -30,6 +30,7 @@ export class SessionStore {
     this.db.run('PRAGMA journal_mode = WAL');
     this.db.run('PRAGMA synchronous = NORMAL');
     this.db.run('PRAGMA foreign_keys = ON');
+    this.db.run('PRAGMA busy_timeout = 30000'); // Wait up to 30s for locks
 
     // Initialize schema if needed (fresh database)
     this.initializeSchema();

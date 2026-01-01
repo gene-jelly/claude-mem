@@ -28,6 +28,7 @@ export class SessionSearch {
     }
     this.db = new Database(dbPath);
     this.db.run('PRAGMA journal_mode = WAL');
+    this.db.run('PRAGMA busy_timeout = 30000'); // Wait up to 30s for locks
 
     // Ensure FTS tables exist
     this.ensureFTSTables();
